@@ -1,12 +1,15 @@
-echo 'time,out (MBit/s),in (kBit/s)' >> network_bw.csv
+echo 'time,out (kBit/s),in (MBit/s)' >> network_bw.csv
 i=0;
 txold="$(</sys/class/net/ens3/statistics/tx_bytes)"; 
 rxold="$(</sys/class/net/ens3/statistics/rx_bytes)"; 
+dkold="$(</sys/class/net/docker0/statistics/rx_bytes)"; 
 while $(sleep 1); do
 rxnow=$(</sys/class/net/ens3/statistics/rx_bytes); 
 txnow=$(</sys/class/net/ens3/statistics/tx_bytes); 
-echo $i','$((($txnow-$txold)*8/(1024*1024)))','$((($rxnow-$rxold)*8/(1024))) >> network_bw.csv; 
+dknow=$(</sys/class/net/docker0/statistics/rx_bytes); 
+echo $i','$((($txnow-$txold-($dknow-$dkold))*8/(1024)))','$((($rxnow-$rxold)*8/(1024*1024))) >> network_bw.csv; 
 txold=$txnow; 
-rxold=$rxnow;
+rxold=$rxnow; 
+dkold=$dknow; 
 i=$(($i+1));
 done
